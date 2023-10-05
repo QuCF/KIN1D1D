@@ -300,7 +300,10 @@ class YMatrix{
             return a_1d_.get();
         }
 
+        // get the number of rows:
         inline uint64_t get_nr(){return Nr_;}
+
+        // get the number of columns:
         inline uint64_t get_nc(){return Nc_;}
 
         inline
@@ -426,31 +429,6 @@ class YMatrix{
         std::size_t get_size_nz_columns(){ return sizeof(int) * Nnz_; }
         std::size_t get_size_nz_rows(){ return sizeof(int) * (Nr_ + 1); }
 
-        // void OLD_VERSION_form_sparse_format()
-        // {
-        //     if(!nz_ || !ids_)
-        //     {
-        //         delete [] nz_;
-        //         delete [] ids_;
-        //     }
-
-        //     nz_ = new T[Nnz_];
-        //     ids_ = new uint64_t[Nnz_];
-
-        //     uint64_t counter = 0;
-        //     for(uint64_t ic = 0; ic < Nc_; ic++)
-        //         for(uint64_t ir = 0; ir < Nr_; ir++)
-        //             if(abs(a_[ir][ic]) > ZERO_ERROR)
-        //             {
-        //                 nz_[counter] = a_[ir][ic];
-        //                 ids_[counter] = ir + Nr_ * ic;
-        //                 ++counter;
-        //             }
-        // }
-
-        // T* get_nz_array(){return nz_;}
-        // uint64_t* get_ids_array(){return ids_;}
-
     protected:
         /**
          * @brief Reserve memory for a new matrix of a known size.
@@ -478,9 +456,9 @@ class YMatrix{
 };
 
 
-// ------------------------------------------
-// --- Sparse matrix in the CSR format with complex elements --- 
-// ------------------------------------------
+// ----------------------------------------------------------------------------------
+// --- Sparse matrix in the CSR (comprassed sparse row) format with complex elements --- 
+// ----------------------------------------------------------------------------------
 struct SpMatrixC{
     uint32_t N; // full size of the matrix (the number of rows);
     uint32_t Nnz; // the total number of nonzero values in the matrix;

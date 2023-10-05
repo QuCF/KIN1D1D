@@ -56,7 +56,9 @@ public:
         YCU Lx, YCU Lv, 
         YCD Tref, YCD den_ref, 
         YCD wa, 
-        YCS id_profile
+        YCD x0, YCD ds,
+        YCS id_profile,
+        YCD diff = 0.0
     ) : Tref_(Tref), 
         den_ref_(den_ref),
         gl_path_out_("../../results/KIN1D1D-results/")
@@ -66,6 +68,10 @@ public:
         
         dd_.set_to_zero();
         dd_.w = wa;
+        dd_.diff = diff;
+
+        dd_.x0 = x0;
+        dd_.ds = ds;
 
         dd_.xmax = Lx;  // for the normalized to ld_  x-grid;
         dd_.vmax = Lv; // for the normalized to vth_ v-grid;
@@ -79,6 +85,8 @@ public:
         dd_.A.N = dd_.Nx * dd_.Nv * dd_.Nvars;
 
         dd_.N_discr = 3;
+        dd_.Ndv_bo = 0;
+        dd_.Ndv = 0;
 
         id_profile_ = id_profile;
         std::transform(
@@ -136,6 +144,9 @@ public:
 
         // parameters:
         f_.add_scalar(dd_.w, "w", "parameters");
+        f_.add_scalar(dd_.diff, "diff", "parameters");
+        f_.add_scalar(dd_.x0, "source_x0", "parameters");
+        f_.add_scalar(dd_.ds, "source_dx", "parameters");
 
         // save the grids:
         f_.add_array(x_.get(), dd_.Nx, std::string("x"), "grids");
@@ -237,6 +248,16 @@ public:
             }
             flag_found = true;
         }
+        if(id_profile_.compare("exp") == 0)
+        {
+            double coef = 0.005;
+            printf("-> Forming exp profiles...\n");
+            for(uint32_t ii = 0; ii < dd_.Nx; ii++){
+                T_[ii]   = exp(coef * (x_[ii]-dd_.x0));
+                den_[ii] = exp(coef * (x_[ii]-dd_.x0));
+            }
+            flag_found = true;
+        }
         // if(id_profile_.compare("gauss") == 0)
         // {
         //     double sigma_T = 0.2;
@@ -259,11 +280,7 @@ public:
     }
 
 
-    /**
-     * @param x0 - source center; 
-     * @param ds - source wigth, 
-    */
-    void form_rhs(YCD r0, YCD ds)
+    void form_rhs()
     {
         printf("--- Setting the right-hand-side vector... ---\n");
         YTimer timer;
@@ -281,14 +298,8 @@ public:
             N_blocks = 1;
         }
 
-        init_rhs_gauss<<<N_blocks, N_threads>>>(r0, ds, dd_.w);
+        init_rhs_gauss<<<N_blocks, N_threads>>>();
        
-
-        f_.open_w();
-        f_.add_scalar(r0, "source_x0", "parameters");
-        f_.add_scalar(ds, "source_dx", "parameters");
-        f_.close();
-        
         cudaDeviceSynchronize();
         timer.Stop();
         printf("\tDone: elapsed time [s]: %0.3e ---\n", timer.get_dur_s());
@@ -878,6 +889,7 @@ protected:
         printf("\tvth[cm/s] = %0.3e,   vth/c = %0.3e\n", vth_, vth_/cc.c_light_);
         printf("------------------ Normalized parameters -------------\n");
         printf("antenna frequency (norm. to wp): \t%0.3f\n", dd_.w);
+        printf("diff. in the velocity space: \t%0.3f\n", dd_.diff);
         printf("spatial step (norm. to ld): \t%0.3e\n", dd_.h);
         printf("velocity step (norm. to vth): \t%0.3e\n", dd_.dv);
         printf("\txmax/ld = %0.1f,  \tfull size [cm] = %0.3e\n",  x_[dd_.Nx-1], x_[dd_.Nx-1] * ld_);

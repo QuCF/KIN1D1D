@@ -4,22 +4,23 @@
 #include "../device/dev_outgoing.cuh"
 
 
-class KWout_form1 : public KW
+class KWout : public KW
 {
 public:
-    KWout_form1(
+    KWout(
         YCU nx, YCU nv, 
         YCU Lx, YCU Lv, 
         YCD Tref, YCD den_ref, 
         YCD wa, 
+        YCD x0, YCD ds,
         YCS id_profile
-    ) : KW(nx, nv, Lx, Lv, Tref, den_ref, wa, id_profile)
+    ) : KW(nx, nv, Lx, Lv, Tref, den_ref, wa, x0, ds, id_profile)
     {
         compute_Nnz();
         print_init_parameters();
     }
 
-    ~KWout_form1(){};
+    ~KWout(){};
 
     void form_sparse_matrix()
     {
