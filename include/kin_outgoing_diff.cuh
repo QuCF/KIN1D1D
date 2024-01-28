@@ -13,8 +13,9 @@ public:
         YCD wa,
         YCD x0, YCD ds, 
         YCS id_profile,
-        YCD diff
-    ) : KW(nx, nv, Lx, Lv, Tref, den_ref, wa, x0, ds, id_profile, diff)
+        YCD diff,
+        YCS folder_to_save
+    ) : KW(nx, nv, Lx, Lv, Tref, den_ref, wa, x0, ds, id_profile, diff, folder_to_save)
     {
         dd_.Ndv_bo = 3;
         dd_.Ndv = 2;

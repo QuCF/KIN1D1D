@@ -42,7 +42,8 @@ void kin_outgoing_form1(int argc, char *argv[])
     uint Lv = 4;  // velocity size
     double source_x0 = 50.;  // source position 
     double source_ds = 1.; // source width
-    double diff = -0.002;
+    double diff = -0.00;
+    string folder_to_save = "../../results/KIN1D1D-results/w12";
 
     // uint Lx = 50;  // spatial size
     // uint Lv = 4;  // velocity size
@@ -54,7 +55,8 @@ void kin_outgoing_form1(int argc, char *argv[])
     // string id_prof = "tanh2";
     // string id_prof = "exp";
 
-    KWout_diff dd(nx, nv, Lx, Lv, Tref, den_ref, wa, source_x0, source_ds, id_prof, diff);
+    KWout_diff dd(nx, nv, Lx, Lv, Tref, den_ref, wa, 
+        source_x0, source_ds, id_prof, diff, folder_to_save);
     // KWout dd(nx, nv, Lx, Lv, Tref, den_ref, wa, source_x0, source_ds, id_prof);
     // KWzero_diff dd(nx, nv, Lx, Lv, Tref, den_ref, wa, source_x0, source_ds, id_prof, diff);
     dd.init_device();

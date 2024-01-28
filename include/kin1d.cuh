@@ -58,10 +58,11 @@ public:
         YCD wa, 
         YCD x0, YCD ds,
         YCS id_profile,
-        YCD diff = 0.0
+        YCD diff = 0.0,
+        YCS folder_to_save="../../results/KIN1D1D-results/"
     ) : Tref_(Tref), 
         den_ref_(den_ref),
-        gl_path_out_("../../results/KIN1D1D-results/")
+        gl_path_out_(folder_to_save + "/")
     {
         using namespace std;
         Constants cc;
