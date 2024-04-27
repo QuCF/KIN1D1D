@@ -44,16 +44,16 @@ protected:
         dd_.A.Nnz = 3 * dd_.Nv * (dd_.Nx - 2) + 4 * dd_.Nv + 3 * dd_.Nv * dd_.Nx;
     }
 
-    void form_submatrix_F(YMatrix<ycomplex> &A, const double* Y)
+    void form_submatrix_F(YMatrix<ycomplex> &A, const qreal* Y)
     {
         using namespace std::complex_literals;
 
         uint32_t idx;
         uint64_t sh_r;
-        ycomplex wi = 1i*dd_.w;
-        double ih = 1./(2.*dd_.h);
-        double ih4 = 4.*ih;
-        double ih3 = 3.*ih;
+        ycomplex wi = Y_II*dd_.w;
+        qreal ih = 1./(2.*dd_.h);
+        qreal ih4 = 4.*ih;
+        qreal ih3 = 3.*ih;
 
         // left edge:
         idx  = 0;
@@ -93,7 +93,7 @@ protected:
     }
 
 
-    void form_submatrix_CE(YMatrix<ycomplex> &A, const double* FB)
+    void form_submatrix_CE(YMatrix<ycomplex> &A, const qreal* FB)
     {   
         using namespace std::complex_literals;
         uint64_t sh_r;
@@ -108,7 +108,7 @@ protected:
     }
 
 
-    void form_submatrix_CF(YMatrix<ycomplex> &A, const double* FB)
+    void form_submatrix_CF(YMatrix<ycomplex> &A, const qreal* FB)
     {
         using namespace std::complex_literals;
         uint64_t sh_r;
@@ -126,7 +126,7 @@ protected:
     void form_submatrix_S(YMatrix<ycomplex> &A)
     {
         using namespace std::complex_literals;
-        ycomplex wi = 1i*dd_.w;
+        ycomplex wi = Y_II*dd_.w;
         uint64_t sh_r;
         uint64_t sh_var = dd_.Nx * dd_.Nv;
         for(uint ix = 0; ix < dd_.Nx; ix++)

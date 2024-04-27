@@ -42,6 +42,32 @@ public:
         printf("--- Done: elapsed time [s]: %0.3e ---\n", timer.get_dur_s());
     }
 
+
+    void svd()
+    {
+        using namespace std;
+        // uint32_t Nr = dd_.A.N+1;
+
+        // ycomplex* values_host = new ycomplex[dd_.A.Nnz];
+        // int* columns_host     = new int[dd_.A.Nnz];
+        // int* rows_host        = new int[Nr];
+
+        // auto size_complex = sizeof(ycomplex) * dd_.A.Nnz;
+        // auto size_columns = sizeof(int) * dd_.A.Nnz;
+        // auto size_rows    = sizeof(int) * Nr;
+
+        // CUDA_CHECK(cudaMemcpy(values_host,  dd_.A.values,  size_complex, cudaMemcpyDeviceToHost));
+        // CUDA_CHECK(cudaMemcpy(columns_host, dd_.A.columns, size_columns, cudaMemcpyDeviceToHost));
+        // CUDA_CHECK(cudaMemcpy(rows_host,    dd_.A.rows,    size_rows,    cudaMemcpyDeviceToHost));
+
+        YMatrix<ycomplex> A_host;
+        dd_.A.form_dense_matrix(A_host);
+        LA::cond_number_cusolver(A_host);
+    }
+
+
+
+
 protected:
     void compute_Nnz()
     {
@@ -54,17 +80,17 @@ protected:
         dd_.A.Nnz += 3 * dd_.Nv * dd_.Nx;
     }
 
-    void form_submatrix_F(YMatrix<ycomplex> &A, const double* Y)
+    void form_submatrix_F(YMatrix<ycomplex> &A, const qreal* Y)
     {
     }
 
 
-    void form_submatrix_CE(YMatrix<ycomplex> &A, const double* FB)
+    void form_submatrix_CE(YMatrix<ycomplex> &A, const qreal* FB)
     {   
     }
 
 
-    void form_submatrix_CF(YMatrix<ycomplex> &A, const double* FB)
+    void form_submatrix_CF(YMatrix<ycomplex> &A, const qreal* FB)
     {
     }
 

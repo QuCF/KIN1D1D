@@ -21,23 +21,23 @@ struct KDATA
     uint32_t Ndv_bo; // for the second derivative in velocity at the velocity boundary;
     uint32_t Ndv; // for the second derivative in velocity in bulk velocity points;
 
-    double w;  // normalized frequency;
-    double h;  // normalized spatial step;
-    double dv; // normalized velocity step;
+    qreal w;  // normalized frequency;
+    qreal h;  // normalized spatial step;
+    qreal dv; // normalized velocity step;
 
-    double diff; // diffusivity in the velocity space;
+    qreal diff; // diffusivity in the velocity space;
 
-    double xmax; // maximum x-coordinate normalized to the Debye length;
-    double vmax; // maximum x-velocity normalized to the thermal velocity;
+    qreal xmax; // maximum x-coordinate normalized to the Debye length;
+    qreal vmax; // maximum x-velocity normalized to the thermal velocity;
 
     SpMatrixC A; // Matrix describing the kinetic problem (Ax = b); [on device].
-    cuDoubleComplex* b; // Right-hand-side vector; on device]/
-    cuDoubleComplex* psi; // Solution of the system A*psi=b; [on device].
-    double* FB; // background distribution function [x,v];
-    double* Y;  // combined background profiles [x,v];
+    ycuComplex* b; // Right-hand-side vector; on device]/
+    ycuComplex* psi; // Solution of the system A*psi=b; [on device].
+    qreal* FB; // background distribution function [x,v];
+    qreal* Y;  // combined background profiles [x,v];
 
-    double x0; // source center;
-    double ds; // source width;
+    qreal x0; // source center;
+    qreal ds; // source width;
 
     void set_to_zero()
     {

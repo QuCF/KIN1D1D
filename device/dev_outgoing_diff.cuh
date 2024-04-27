@@ -3,8 +3,8 @@
 #include "dev_common.cuh"
 
 
-// __constant__ double coef_plot = 10000000;
-__constant__ double coef_plot = 0;
+// __constant__ qreal coef_plot = 10000000;
+__constant__ qreal coef_plot = 0;
 
 /**
  * threads: velocity indices;
@@ -82,14 +82,14 @@ __global__ void Diff_set_sparse_matrix_rows()
 
 
 __device__ void left_vel_boundary(
-    YCU ir, int*& columns, cuDoubleComplex*& values, int32_t& kk, uint32_t& sh,
+    YCU ir, int*& columns, ycuComplex*& values, int32_t& kk, uint32_t& sh,
     YCU sh_change, YCD coef
 ){
-    double idv = dev_dd_.diff/(dev_dd_.dv*dev_dd_.dv);
-    double idv2 = 2.*idv;
-    double idv5 = 5.*idv;
-    double idv4 = 4.*idv;
-    double w = dev_dd_.w;
+    qreal idv = dev_dd_.diff/(dev_dd_.dv*dev_dd_.dv);
+    qreal idv2 = 2.*idv;
+    qreal idv5 = 5.*idv;
+    qreal idv4 = 4.*idv;
+    qreal w = dev_dd_.w;
 
     sh += sh_change;
 
@@ -116,12 +116,12 @@ __device__ void left_vel_boundary(
 
 
 __device__ void bulk_vel(
-    YCU ir, int*& columns, cuDoubleComplex*& values, int32_t& kk, uint32_t& sh,
+    YCU ir, int*& columns, ycuComplex*& values, int32_t& kk, uint32_t& sh,
     YCU sh_change, YCD coef
 ){
-    double idv  = dev_dd_.diff/(dev_dd_.dv*dev_dd_.dv);
-    double idv2 = 2.*idv;
-    double w    = dev_dd_.w;
+    qreal idv  = dev_dd_.diff/(dev_dd_.dv*dev_dd_.dv);
+    qreal idv2 = 2.*idv;
+    qreal w    = dev_dd_.w;
 
     sh += sh_change;
 
@@ -143,14 +143,14 @@ __device__ void bulk_vel(
 
 
 __device__ void right_vel_boundary(
-    YCU ir, int*& columns, cuDoubleComplex*& values, int32_t& kk, uint32_t& sh,
+    YCU ir, int*& columns, ycuComplex*& values, int32_t& kk, uint32_t& sh,
     YCU sh_change, YCD coef
 ){
-    double idv = dev_dd_.diff/(dev_dd_.dv*dev_dd_.dv);
-    double idv2 = 2.*idv;
-    double idv5 = 5.*idv;
-    double idv4 = 4.*idv;
-    double w = dev_dd_.w;
+    qreal idv = dev_dd_.diff/(dev_dd_.dv*dev_dd_.dv);
+    qreal idv2 = 2.*idv;
+    qreal idv5 = 5.*idv;
+    qreal idv4 = 4.*idv;
+    qreal w = dev_dd_.w;
 
     sh += sh_change;
 
@@ -183,9 +183,9 @@ __device__ void right_vel_boundary(
 */
 __global__ void Diff_set_matrix_values()
 {
-    cuDoubleComplex*& values = dev_dd_.A.values;
+    ycuComplex*& values = dev_dd_.A.values;
     int*& columns = dev_dd_.A.columns;
-    double*& FB = dev_dd_.FB;
+    qreal*& FB = dev_dd_.FB;
 
     uint32_t iv = threadIdx.x;
     uint32_t ix = blockIdx.x;
@@ -198,7 +198,7 @@ __global__ void Diff_set_matrix_values()
     uint32_t Nx = dev_dd_.Nx;
     uint32_t Nv = dev_dd_.Nv;
     uint32_t Nvh = dev_dd_.Nv_h;
-    double w = dev_dd_.w;
+    qreal w = dev_dd_.w;
 
     uint32_t sh, sh_next;
 

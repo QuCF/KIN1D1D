@@ -49,17 +49,17 @@ protected:
         dd_.A.Nnz += dd_.Nv * (dd_.Nx-2) + dd_.Nv;
     }
 
-    void form_submatrix_F(YMatrix<ycomplex> &A, const double* Y)
+    void form_submatrix_F(YMatrix<ycomplex> &A, const qreal* Y)
     {
     }
 
 
-    void form_submatrix_CE(YMatrix<ycomplex> &A, const double* FB)
+    void form_submatrix_CE(YMatrix<ycomplex> &A, const qreal* FB)
     {   
     }
 
 
-    void form_submatrix_CF(YMatrix<ycomplex> &A, const double* FB)
+    void form_submatrix_CF(YMatrix<ycomplex> &A, const qreal* FB)
     {
     }
 

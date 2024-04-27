@@ -64,9 +64,9 @@ __global__ void Diff_ZERO_set_sparse_matrix_rows()
 */
 __global__ void Diff_ZERO_set_matrix_values()
 {
-    cuDoubleComplex*& values = dev_dd_.A.values;
+    ycuComplex*& values = dev_dd_.A.values;
     int*& columns = dev_dd_.A.columns;
-    double*& FB = dev_dd_.FB;
+    qreal*& FB = dev_dd_.FB;
 
     uint32_t iv = threadIdx.x;
     uint32_t ix = blockIdx.x;
@@ -75,19 +75,19 @@ __global__ void Diff_ZERO_set_matrix_values()
     uint32_t Nx = dev_dd_.Nx;
     uint32_t Nv = dev_dd_.Nv;
     uint32_t Nvh = dev_dd_.Nv_h;
-    double w = dev_dd_.w;
+    qreal w = dev_dd_.w;
 
     uint32_t sh, sh_next;
 
-    double ih = 1./(2.*dev_dd_.h);
-    double ih3 = 3.*ih;
-    double ih4 = 4.*ih;
-    double v1 = get_v1(dev_dd_.vmax, dev_dd_.dv, iv);
+    qreal ih = 1./(2.*dev_dd_.h);
+    qreal ih3 = 3.*ih;
+    qreal ih4 = 4.*ih;
+    qreal v1 = get_v1(dev_dd_.vmax, dev_dd_.dv, iv);
 
-    double ihh = dev_dd_.diff/(dev_dd_.dv*dev_dd_.dv);
-    double ihh2 = 2.*ihh;
-    double ihh5 = 5.*ihh;
-    double ihh4 = 4.*ihh;
+    qreal ihh = dev_dd_.diff/(dev_dd_.dv*dev_dd_.dv);
+    qreal ihh2 = 2.*ihh;
+    qreal ihh5 = 5.*ihh;
+    qreal ihh4 = 4.*ihh;
 
     uint32_t sh_var  = Nv * Nx;
 

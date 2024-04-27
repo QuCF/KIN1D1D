@@ -17,22 +17,22 @@ protected:
 
     std::string id_profile_; // background profiles;
 
-    double coef_superposition_;
+    qreal coef_superposition_;
 
-    std::shared_ptr<double[]> x_; // normalized to kx spatial grid;
-    std::shared_ptr<double[]> v_; // normalized velocity grid;
+    std::shared_ptr<qreal[]> x_; // normalized to kx spatial grid;
+    std::shared_ptr<qreal[]> v_; // normalized velocity grid;
 
-    std::shared_ptr<double[]> rx_; // normalized to 1 spatial grid;
-    std::shared_ptr<double[]> rv_; // normalized to 1 velocity grid;
+    std::shared_ptr<qreal[]> rx_; // normalized to 1 spatial grid;
+    std::shared_ptr<qreal[]> rv_; // normalized to 1 velocity grid;
 
-    std::shared_ptr<double[]> T_;   // normalized temperature profile;
-    std::shared_ptr<double[]> den_; // normalized density profile;
+    std::shared_ptr<qreal[]> T_;   // normalized temperature profile;
+    std::shared_ptr<qreal[]> den_; // normalized density profile;
 
-    double Tref_;    // reference electron temperature (erg);
-    double den_ref_; // reference density profile (cm-3);
-    double wp_;  // reference plasma frequency (1/s);
-    double ld_;  // reference Debye length (cm);
-    double vth_; // reference thermal speed (cm/s);
+    qreal Tref_;    // reference electron temperature (erg);
+    qreal den_ref_; // reference density profile (cm-3);
+    qreal wp_;  // reference plasma frequency (1/s);
+    qreal ld_;  // reference Debye length (cm);
+    qreal vth_; // reference thermal speed (cm/s);
 
     std::string gl_path_out_;   // path to the output files;
     std::string hdf5_name_out_; // name of the output .hdf5 file;
@@ -100,13 +100,13 @@ public:
         set_output_name();
 
         // plasma parameters:
-        double temp = 4*cc.pi_*pow(cc.e_,2)*den_ref_;
+        qreal temp = 4*cc.pi_*pow(cc.e_,2)*den_ref_;
         wp_  = sqrt(temp/cc.me_);
         ld_  = sqrt(Tref_/temp);
         vth_ = ld_ * wp_;
 
         // --- spatial and velocity grids ---
-        double h1, dv1; // steps for the normalized to 1 grids;
+        qreal h1, dv1; // steps for the normalized to 1 grids;
 
         dd_.h  = dd_.xmax / (dd_.Nx - 1);
         dd_.dv = 2.*dd_.vmax / (dd_.Nv - 1); // negative and positive velocities;
@@ -114,15 +114,15 @@ public:
         h1  = dd_.h / dd_.xmax;
         dv1 = dd_.dv / dd_.vmax;
 
-        x_  = shared_ptr<double[]>(new double[dd_.Nx]);
-        rx_ = shared_ptr<double[]>(new double[dd_.Nx]);
+        x_  = shared_ptr<qreal[]>(new qreal[dd_.Nx]);
+        rx_ = shared_ptr<qreal[]>(new qreal[dd_.Nx]);
         for(uint32_t ii = 0; ii < dd_.Nx; ii++){
             x_[ii]  = get_x1(dd_.h, ii);
             rx_[ii] = get_x1(   h1, ii);
         }
 
-        v_  = shared_ptr<double[]>(new double[dd_.Nv]);
-        rv_ = shared_ptr<double[]>(new double[dd_.Nv]);
+        v_  = shared_ptr<qreal[]>(new qreal[dd_.Nv]);
+        rv_ = shared_ptr<qreal[]>(new qreal[dd_.Nv]);
         for(uint32_t ii = 0; ii < dd_.Nv; ii++){
             v_[ii]  = get_v1(dd_.vmax, dd_.dv, ii);
             rv_[ii] = get_v1(       1,    dv1, ii);
@@ -187,24 +187,24 @@ public:
 
         CUDA_CHECK(cudaMalloc(
             reinterpret_cast<void **>(&dd_.b),  
-            sizeof(cuDoubleComplex) * dd_.A.N
+            sizeof(ycuComplex) * dd_.A.N
         ));
         CUDA_CHECK(cudaMalloc(
             reinterpret_cast<void **>(&dd_.psi),  
-            sizeof(cuDoubleComplex) * dd_.A.N
+            sizeof(ycuComplex) * dd_.A.N
         ));
         CUDA_CHECK(cudaMalloc(
             reinterpret_cast<void **>(&dd_.FB),  
-            sizeof(double) * dd_.Nx * dd_.Nv
+            sizeof(qreal) * dd_.Nx * dd_.Nv
         ));
         CUDA_CHECK(cudaMalloc(
             reinterpret_cast<void **>(&dd_.Y),  
-            sizeof(double) * dd_.Nx * dd_.Nv
+            sizeof(qreal) * dd_.Nx * dd_.Nv
         ));
 
         printf("-> initializing vectors...\n");
-        CUDA_CHECK(cudaMemset(dd_.b, 0, sizeof(cuDoubleComplex) * dd_.A.N));
-        CUDA_CHECK(cudaMemset(dd_.psi, 0, sizeof(cuDoubleComplex) * dd_.A.N));
+        CUDA_CHECK(cudaMemset(dd_.b, 0, sizeof(ycuComplex) * dd_.A.N));
+        CUDA_CHECK(cudaMemset(dd_.psi, 0, sizeof(ycuComplex) * dd_.A.N));
 
         printf("-> copying constant parameters...\n");
         CUDA_CHECK(cudaMemcpyToSymbol(dev_dd_, &dd_, sizeof(KDATA)));
@@ -218,8 +218,8 @@ public:
         YTimer timer;
         timer.Start();
 
-        T_  = std::shared_ptr<double[]>(new double[dd_.Nx]);
-        den_ = std::shared_ptr<double[]>(new double[dd_.Nx]);
+        T_  = std::shared_ptr<qreal[]>(new qreal[dd_.Nx]);
+        den_ = std::shared_ptr<qreal[]>(new qreal[dd_.Nx]);
         if(id_profile_.compare("flat") == 0)
         {
             printf("-> Forming flat profiles...\n");
@@ -231,15 +231,15 @@ public:
         }
         if(id_profile_.compare("tanh2") == 0)
         {
-            // double a = 40;
-            // double x0_left = 0.05;
-            // double x0_right = 0.95;
+            // qreal a = 40;
+            // qreal x0_left = 0.05;
+            // qreal x0_right = 0.95;
 
-            double a = 80;
-            double x0_left = 0.05;
-            double x0_right = 0.95;
+            qreal a = 80;
+            qreal x0_left = 0.05;
+            qreal x0_right = 0.95;
 
-            double temp;
+            qreal temp;
             printf("-> Forming tanh-tanh profiles...\n");
             for(uint32_t ii = 0; ii < dd_.Nx; ii++)
             {
@@ -251,7 +251,7 @@ public:
         }
         if(id_profile_.compare("exp") == 0)
         {
-            double coef = 0.005;
+            qreal coef = 0.005;
             printf("-> Forming exp profiles...\n");
             for(uint32_t ii = 0; ii < dd_.Nx; ii++){
                 T_[ii]   = exp(coef * (x_[ii]-dd_.x0));
@@ -261,10 +261,10 @@ public:
         }
         // if(id_profile_.compare("gauss") == 0)
         // {
-        //     double sigma_T = 0.2;
-        //     double sigma_n = 0.1;
-        //     double sigma_T2 = 2.*sigma_T*sigma_T;
-        //     double sigma_n2 = 2.*sigma_n*sigma_n;
+        //     qreal sigma_T = 0.2;
+        //     qreal sigma_n = 0.1;
+        //     qreal sigma_T2 = 2.*sigma_T*sigma_T;
+        //     qreal sigma_n2 = 2.*sigma_n*sigma_n;
         //     printf("-> Forming Gaussian profiles...\n");
         //     for(uint32_t ii = 0; ii < dd_.Nx; ii++){
         //         T_[ii]   = exp(-pow(rx_[ii] - 0.50,2)/sigma_T2);
@@ -311,16 +311,16 @@ public:
     {
         YTimer timer;
         uint32_t NxNv = dd_.Nx*dd_.Nv;
-        auto size_v = sizeof(double) * NxNv;
-        double* F;
-        double* Y;
+        auto size_v = sizeof(qreal) * NxNv;
+        qreal* F;
+        qreal* Y;
         
         printf("--- Creating a dense matrix... ---\n");
         timer.Start();
 
         // --- Get background profiles ---
-        F = new double[NxNv];
-        Y = new double[NxNv];
+        F = new qreal[NxNv];
+        Y = new qreal[NxNv];
         CUDA_CHECK(cudaMemcpy(F, dd_.FB, size_v, cudaMemcpyDeviceToHost));
         CUDA_CHECK(cudaMemcpy(Y, dd_.Y, size_v, cudaMemcpyDeviceToHost));
 
@@ -392,10 +392,10 @@ public:
         timer.Start();
 
         uint32_t NxNv = dd_.Nx*dd_.Nv;
-        auto size_v = sizeof(double) * NxNv;
+        auto size_v = sizeof(qreal) * NxNv;
 
-        double* F = new double[NxNv];
-        double* Y = new double[NxNv];
+        qreal* F = new qreal[NxNv];
+        qreal* Y = new qreal[NxNv];
         
         // transfer data from GPU to host:
         CUDA_CHECK(cudaMemcpy(F, dd_.FB, size_v, cudaMemcpyDeviceToHost));
@@ -500,9 +500,9 @@ public:
         // YMatrix<ycomplex> A;
         // dd_.A.form_dense_matrix(A);
 
-        // // double ih = 1./(2.*dd_.h);
-        // // double ih3 = 3.*ih;
-        // // double ih4 = 4.*ih;
+        // // qreal ih = 1./(2.*dd_.h);
+        // // qreal ih3 = 3.*ih;
+        // // qreal ih4 = 4.*ih;
         // // printf("sigma*vmax:  %0.3e\n",   ih*dd_.vmax);
         // // printf("4sigma*vmax: %0.3e\n", ih4*dd_.vmax);
         // // printf("\n");
@@ -658,8 +658,8 @@ public:
 
     void recheck_result()
     {
-        double max_abs_error = 0.0;
-        double max_rel_error = 0.0;
+        qreal max_abs_error = 0.0;
+        qreal max_rel_error = 0.0;
 
         printf("--- Check the solver... ---"); 
         std::cout << std::endl;
@@ -667,7 +667,7 @@ public:
         timer.Start();
 
         // maximum absolute error:
-        cuDoubleComplex* dev_out;
+        ycuComplex* dev_out;
         LA::recheck_linear_solver(dd_.A, dd_.psi, dd_.b, dev_out);
         ycomplex* out = new ycomplex[dd_.A.N];
         CUDA_CHECK(cudaMemcpy(out, dev_out, sizeof(ycomplex) * dd_.A.N, cudaMemcpyDeviceToHost));
@@ -677,7 +677,7 @@ public:
         CUDA_CHECK(cudaMemcpy(b, dd_.b, sizeof(ycomplex) * dd_.A.N, cudaMemcpyDeviceToHost));
 
         // relative errors:
-        double* rel_errors = new double[dd_.A.N];
+        qreal* rel_errors = new qreal[dd_.A.N];
         for(uint32_t ii = 0; ii < dd_.A.N; ii++)
         {
             auto err = std::abs(out[ii]);
@@ -791,8 +791,8 @@ protected:
     {
         printf("-> Building (x,v) background distributions...\n");
 
-        double *dT = new double[dd_.Nx]; 
-        double *dn = new double[dd_.Nx]; 
+        qreal *dT = new qreal[dd_.Nx]; 
+        qreal *dn = new qreal[dd_.Nx]; 
         
         // find derivatives:
         YMATH::find_der(T_.get(),   dd_.h, dd_.Nx, dT);
@@ -807,11 +807,11 @@ protected:
         f_.close();
 
         // save the x-background profiles on the GPU:
-        double* dev_T;
-        double* dev_n;
-        double* dev_dT;
-        double* dev_dn;
-        auto size_v = sizeof(double) * dd_.Nx;
+        qreal* dev_T;
+        qreal* dev_n;
+        qreal* dev_dT;
+        qreal* dev_dn;
+        auto size_v = sizeof(qreal) * dd_.Nx;
         CUDA_CHECK(cudaMalloc(reinterpret_cast<void **>(&dev_T), size_v));
         CUDA_CHECK(cudaMalloc(reinterpret_cast<void **>(&dev_n), size_v));
         CUDA_CHECK(cudaMalloc(reinterpret_cast<void **>(&dev_dT), size_v));
@@ -913,7 +913,7 @@ protected:
     virtual void compute_Nnz() = 0;
 
     void init_background_distribution(
-        double* dev_T, double* dev_n, double* dev_dT, double* dev_dn) 
+        qreal* dev_T, qreal* dev_n, qreal* dev_dT, qreal* dev_dn) 
     {
         init_background_distribution_form1<<<dd_.Nx, dd_.Nv>>>(dev_T, dev_n);
     } 

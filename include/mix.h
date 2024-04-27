@@ -41,6 +41,22 @@
 // ------------------------------------------
 #define YCB const bool&
 
+// // --- Single Precision ---
+// #define qreal  float
+// #define ycuComplex cuComplex
+// #define ycuSVD cusolverDnCgesvd
+// #define ycuInverse cusolverSpCcsrlsvqr
+// #define Y_II  1if
+
+// --- Double Precision ---
+#define qreal  double
+#define ycuComplex cuDoubleComplex
+#define ycuSVD cusolverDnZgesvd
+#define ycuInverse cusolverSpZcsrlsvqr
+#define Y_II  1i
+
+
+
 #define YCsh  const short&
 #define YCVsh const std::vector<short>&
 #define YVsh  std::vector<short>&
@@ -65,12 +81,12 @@
 #define YCVS const std::vector<std::string>&
 #define YVSv std::vector<std::string>
 
-#define YCD const double&
-#define YCVD const std::vector<double>&
-#define YVD  std::vector<double>&
-#define YVDv std::vector<double>
+#define YCD const qreal&
+#define YCVD const std::vector<qreal>&
+#define YVD  std::vector<qreal>&
+#define YVDv std::vector<qreal>
 
-#define ycomplex std::complex<double>
+#define ycomplex std::complex<qreal>
 #define YCCo const ycomplex&
 
 #define YCCM const std::shared_ptr<const YMatrix>
@@ -82,13 +98,13 @@
 #define nq_THREADS  7
 struct Constants
 {
-    double c_light_ = 299792458 * 1e2; // speed of light (cm/s);
-    double me_ = 9.1093837e-28; // electro mass (g);
-    double e_ = 4.8032e-10; // electron charge (statcoul);
-    double ev_ = 1.602176634e-12; // electronvolt (erg);
-    double kB_ = 1.3807e-16; // Boltzmann constant (erg/K);
-    double pi_ = M_PI;
-    double pi2_ = 2*M_PI;
+    qreal c_light_ = 299792458 * 1e2; // speed of light (cm/s);
+    qreal me_ = 9.1093837e-28; // electro mass (g);
+    qreal e_ = 4.8032e-10; // electron charge (statcoul);
+    qreal ev_ = 1.602176634e-12; // electronvolt (erg);
+    qreal kB_ = 1.3807e-16; // Boltzmann constant (erg/K);
+    qreal pi_ = M_PI;
+    qreal pi2_ = 2*M_PI;
 };
 
 // ------------------------------------------
@@ -116,7 +132,7 @@ public:
     //         << get_dur_s() << " s" << std::endl;
     //     print_log_flush(oss.str());
     // }
-    double get_dur(){
+    qreal get_dur(){
         std::chrono::duration<double> dur_seconds = end_ - start_;
         return 1000.*dur_seconds.count(); // in ms
     }
@@ -457,7 +473,7 @@ class YMatrix{
 
 
 // ----------------------------------------------------------------------------------
-// --- Sparse matrix in the CSR (comprassed sparse row) format with complex elements --- 
+// --- Sparse matrix in the CSR (compressed sparse row) format with complex elements --- 
 // ----------------------------------------------------------------------------------
 struct SpMatrixC{
     uint32_t N; // full size of the matrix (the number of rows);
@@ -468,7 +484,7 @@ struct SpMatrixC{
      * all nonzero elements in the first row, 
      * then all nz elements in the second row and so on.
      */  
-    cuDoubleComplex* values; 
+    ycuComplex* values; 
         
     /**
      * [Nnz] columns of the nonzero values.
@@ -492,7 +508,7 @@ struct SpMatrixC{
     {
         CUDA_CHECK(cudaMalloc(
             reinterpret_cast<void **>(&values),  
-            sizeof(cuDoubleComplex) * Nnz
+            sizeof(ycuComplex) * Nnz
         ));
         CUDA_CHECK(cudaMalloc(
             reinterpret_cast<void **>(&columns),  
@@ -558,9 +574,9 @@ public:
      * @param der_y resulting derivaritive of @param y. 
      * The array @param der_y must be initialized outside the function.
     */
-    static void find_der(const double* y, YCD h, YCU N, double* der_y)
+    static void find_der(const qreal* y, YCD h, YCU N, qreal* der_y)
     {
-        double ih = 1./(2.*h);
+        qreal ih = 1./(2.*h);
         uint32_t l = N-1;
 
         der_y[0] = ih * (-3.*y[0] + 4.*y[1] - y[2]);
@@ -699,7 +715,7 @@ struct YHDF5
             H5::DataSet dataset = grp.createDataSet(dname, dtype, dspace);
             dataset.write((uint64_t*) &v, dtype);
         }
-        inline void write(const double& v, YCS dname, H5::Group& grp)
+        inline void write(const qreal& v, YCS dname, H5::Group& grp)
         {
             auto dspace = H5::DataSpace(H5S_SCALAR);
             auto dtype = H5::PredType::NATIVE_DOUBLE;
@@ -723,7 +739,7 @@ struct YHDF5
             H5::DataSet dataset = grp.createDataSet(dname, dtype, dspace);
             dataset.write(&v[0], dtype);
         }
-        inline void write(const std::vector<double>& v, YCS dname, H5::Group& grp)
+        inline void write(const std::vector<qreal>& v, YCS dname, H5::Group& grp)
         {
             hsize_t dims[] = {v.size()};
             H5::DataSpace dspace(1, dims);
@@ -738,13 +754,13 @@ struct YHDF5
 
             hid_t dtype = H5Tcreate(H5T_COMPOUND, sizeof(ycomplex));
             H5Tinsert (dtype, "real", 0, H5T_NATIVE_DOUBLE);
-            H5Tinsert (dtype, "imag", sizeof(double), H5T_NATIVE_DOUBLE);
+            H5Tinsert (dtype, "imag", sizeof(qreal), H5T_NATIVE_DOUBLE);
 
             H5::DataSet dataset = grp.createDataSet(dname, dtype, dspace);
             dataset.write(&v[0], dtype);
         }
 
-        inline void write(const double* v, YCUL N, YCS dname, H5::Group& grp)
+        inline void write(const qreal* v, YCUL N, YCS dname, H5::Group& grp)
         {
             hsize_t dims[] = {N};
             H5::DataSpace dspace(1, dims);
@@ -778,20 +794,20 @@ struct YHDF5
   
             hid_t dtype = H5Tcreate(H5T_COMPOUND, sizeof(ycomplex));
             H5Tinsert (dtype, "real", 0, H5T_NATIVE_DOUBLE);
-            H5Tinsert (dtype, "imag", sizeof(double), H5T_NATIVE_DOUBLE);
+            H5Tinsert (dtype, "imag", sizeof(qreal), H5T_NATIVE_DOUBLE);
 
             H5::DataSet dataset = grp.createDataSet(dname, dtype, dspace);
             dataset.write(v, dtype);
         }
 
-        inline void write(const cuDoubleComplex* v, YCUL N, YCS dname, H5::Group& grp)
+        inline void write(const ycuComplex* v, YCUL N, YCS dname, H5::Group& grp)
         {
             hsize_t dims[] = {N};
             H5::DataSpace dspace(1, dims);
   
             hid_t dtype = H5Tcreate(H5T_COMPOUND, sizeof(ycomplex));
-            H5Tinsert (dtype, "real", HOFFSET(cuDoubleComplex,x), H5T_NATIVE_DOUBLE);
-            H5Tinsert (dtype, "imag", HOFFSET(cuDoubleComplex,y), H5T_NATIVE_DOUBLE);
+            H5Tinsert (dtype, "real", HOFFSET(ycuComplex,x), H5T_NATIVE_DOUBLE);
+            H5Tinsert (dtype, "imag", HOFFSET(ycuComplex,y), H5T_NATIVE_DOUBLE);
 
             H5::DataSet dataset = grp.createDataSet(dname, dtype, dspace);
             dataset.write(v, dtype);

@@ -9,7 +9,7 @@
 */
 __global__ void set_sparse_matrix_rows()
 {
-    // cuDoubleComplex*& values = dev_dd_.A.values;
+    // cuqrealComplex*& values = dev_dd_.A.values;
     // int*& columns = dev_dd_.A.columns;
     int*& rows = dev_dd_.A.rows;
 
@@ -66,9 +66,9 @@ __global__ void set_sparse_matrix_rows()
 */
 __global__ void set_matrix_values()
 {
-    cuDoubleComplex*& values = dev_dd_.A.values;
+    ycuComplex*& values = dev_dd_.A.values;
     int*& columns = dev_dd_.A.columns;
-    double*& FB = dev_dd_.FB;
+    qreal*& FB = dev_dd_.FB;
 
     uint32_t iv = threadIdx.x;
     uint32_t ix = blockIdx.x;
@@ -77,12 +77,12 @@ __global__ void set_matrix_values()
     uint32_t Nx = dev_dd_.Nx;
     uint32_t Nv = dev_dd_.Nv;
     uint32_t Nvh = dev_dd_.Nv_h;
-    double w = dev_dd_.w;
+    qreal w = dev_dd_.w;
 
     uint32_t sh, sh_next;
 
-    double ih = 1./(2.*dev_dd_.h);
-    double ih3 = 3.*ih;
+    qreal ih = 1./(2.*dev_dd_.h);
+    qreal ih3 = 3.*ih;
     double ih4 = 4.*ih;
     double v1 = get_v1(dev_dd_.vmax , dev_dd_.dv, iv);
 
